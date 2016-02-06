@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Bikepool</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- css -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" media="screen">
+	<link href="color/default.css" rel="stylesheet" media="screen">
+	<script src="js/modernizr.custom.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <style>
+  </style>
+  <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="prof.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+      </head>
+  <body onload="getData()">
+	<div class="menu-area">
+			<div id="dl-menu" class="dl-menuwrapper">
+						<button class="dl-trigger">Open Menu</button>
+						<ul class="dl-menu">
+							<li>
+								<a href="#intro">Home</a>
+							</li>
+							<li><a href="#about">About</a></li>
+							<li><a href="#services">Services</a></li>
+							<li><a href="#works">Works</a></li>
+							<li><a href="#contact">Contact</a></li>
+							<li><a href="prof.html">Profile</a></li>
+							<li>
+								<a href="#">Friends</a>
+								<ul class="dl-submenu">
+									<li><a href="friend.html">Find Friends</a></li>
+									<li><a href="managefriend.html">Manage Friends</a></li>
+								</ul>
+							</li>
+						</ul>
+					</div><!-- /dl-menuwrapper -->
+	</div>	
+
+	  <!-- intro area -->	  
+	  <div id="intro">
+	<script>
+function getData()
+{
+	request=$.ajax({
+				url:"http://localhost:3000/getData",
+				type:"post",
+				data:{session:localStorage.getItem("session")}
+				});
+				request.done(function(response,textstatus,jqXHR)
+				{
+					console.log(response);
+					populate(response);
+				})
+				request.fail(function (jqXHR, textStatus, errorThrown)
+				{
+					console.error("The following error occurred: "+textStatus, errorThrown);
+				});
+
+}
+
+function populate(val)
+{
+	var data=JSON.parse(val);
+	var session=localStorage.getItem("session");
+	
+	document.getElementById("fname").value=data.FName;
+	document.getElementById("lname").value=data.LName;
+	document.getElementById("email").value=data.Email;
+	document.getElementById("phone").value=data.Tel;
+	document.getElementById("bikeExp").value=data.BikeExp;
+	console.log(data.Photo);
+	
+	if(data.Photo === null){
+		console.log("No photo");
+	}
+	else { 
+		document.getElementById("photoShow").src="file:///C:/Users/Xiao/WebstormProjects/backend/"+session+data.Photo;
+	}
+	//console.log(document.getElementById("photoShow").src);
+}
+</script>
+
+<script>
+$(document).ready(function()
+	{
+		var firstName, lastName, emailAdd, bikeExp, phoneNum;
+		var photoString;
+		
+		$("#submit").click(function()
+		{
+			firstName=$("#fname").val();
+			lastName=$("#lname").val();
+			emailAdd=$("#email").val();
+			bikeExp=$("#bikeExp").val();
+			phoneNum=$("#phone").val();
+			photo=$('#profilePhoto').val(); 
+			
+			var stringval = document.getElementById("imgUpload").innerHTML;
+			
+			photoString=stringval.split(',');
+			
+			//console.log(document.getElementById("imgUpload").innerHTML);
+			//console.log(photoString[1]);
+			
+			request1 = $.ajax({
+						url: "http://localhost:3000/updateProfile",
+						type: "post",
+						data: {fname:firstName, lname:lastName, email: emailAdd, bikeExp:bikeExp, phone:phoneNum, profilePhoto:photo, imgUpload:photoString[1], session:localStorage.getItem("session")}
+						});
+			
+			request1.done(function (response, textStatus, jqXHR)
+			{
+				console.log(response);
+
+				if(response==="true")
+				{
+					alert("Update successfully.");
+					//refreshPage();
+				}
+			});
+
+			request1.fail(function (jqXHR, textStatus, errorThrown)
+			{
+				console.error("The following error occurred: "+textStatus, errorThrown);
+			});
+		});	
+});
+</script>
+<script> 
+$(document).ready(function() { 
+    var readURL = function(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('.profile-pic').attr('src', e.target.result);
+            }
+    
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+  
+    $(".file-upload").on('change', function(){
+        readURL(this);
+    });
+    
+    $(".upload-button").on('click', function() {
+       $(".file-upload").click();
+    });
+});
+
+</script>
+<script>
+function encodeImageFileAsURL(){
+
+    var filesSelected = document.getElementById("profilePhoto").files;
+    if (filesSelected.length > 0)
+    {
+        var fileToLoad = filesSelected[0];
+
+        var fileReader = new FileReader();
+
+        fileReader.onload = function(fileLoadedEvent) {
+            var srcData = fileLoadedEvent.target.result; // <--- data: base64
+			
+			document.getElementById("imgUpload").innerHTML = srcData;
+			
+			//console.log(document.getElementById("imgUpload").innerHTML);
+			//console.log(srcData);
+			
+			//var newImage = document.createElement('img');
+			//newImage.src = srcData;
+
+			//document.getElementById("imgUpload").innerHTML = newImage.outerHTML;
+			//console.log("Converted Base64 version is "+document.getElementById("imgUpload").innerHTML);
+        }
+        fileReader.readAsDataURL(fileToLoad);
+    }
+	
+	var div = document.getElementById("imgUpload");
+	// hide
+	div.style.visibility = 'hidden';
+}
+</script>
+
+<!-- <body onload="getData()"-->
+<div class="container" style="padding-top: 60px;">
+  <h1 class="page-header">Edit Profile</h1>
+  <div class="row">
+ 
+ 
+	<!-- left column -->		
+    <div id="test" class="col-md-4 col-sm-6 col-xs-12">
+		<div class="text-center">
+			
+   			<img id="photoShow" class="profile-pic" src="default_user.jpg"/>
+			<p><h6 align="left">Upload a different photo...</h6></p>
+			<input id="profilePhoto" class="file-upload" type="file" onchange="encodeImageFileAsURL();" accept="image/*"/>
+			<div id="imgUpload" visibility="hidden"></div>
+		</div>
+    </div>
+    <!-- edit form column -->
+    <div class="col-md-8 col-sm-6 col-xs-12 personal-info">
+		<div class="alert alert-info alert-dismissable">
+			<a class="panel-close close" data-dismiss="alert">Close</a> 
+			<i class="fa fa-coffee"></i>
+			<strong>Edit your profile here.</strong> 
+		</div>
+		<h3>Personal info</h3>
+		<form class="form-horizontal" role="form">
+        <div class="form-group">
+			<label class="col-lg-3 control-label">First name:</label>
+			<div class="col-lg-8">
+            <input class="form-control" id="fname" value="" type="text">
+			</div>
+        </div>
+        <div class="form-group">
+			<label class="col-lg-3 control-label">Last name:</label>
+			<div class="col-lg-8">
+            <input class="form-control" id="lname" value="" type="text">
+			</div>
+        </div>
+       
+        <div class="form-group">
+			<label class="col-lg-3 control-label">Email:</label>
+			<div class="col-lg-8">
+            <input class="form-control" id="email" value="" type="text" disabled>
+			</div>
+        </div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label">Phone:</label>
+			<div class="col-lg-8">
+            <input class="form-control" id="phone" value="" type="tel">
+			</div>
+        </div>
+        
+		<div class="form-group">
+			<label class="col-md-3 control-label">Bike Experience:</label>
+			<div class="col-lg-8">
+				<select class="form-control" id="bikeExp" value="Experience Level">
+					<option value="one">Beginner</option>
+					<option value="two">Intermediate</option>
+					<option value="three">Expert</option>
+				</select>
+			</div>
+		</div>
+        
+      <!--  <div class="form-group">
+          <label class="col-md-3 control-label">Password:</label>
+          <div class="col-md-8">
+            <input class="form-control" value="11111122333" type="password">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-md-3 control-label">Confirm password:</label>
+          <div class="col-md-8">
+            <input class="form-control" value="11111122333" type="password">
+          </div>
+        </div>
+		-->
+        <div class="form-group">
+			<label class="col-md-3 control-label"></label>
+			<div class="col-md-8">
+            <input type="button" id="submit" class="btn btn-primary" value="Save Changes" type="button">
+            <span></span>
+            <input class="btn btn-default" value="Back" onclick="trial()">
+			</div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+	function trial(){
+		window.location.href="home.html";	
+	}
+</script>
+		
+	 </div>
+	  
+
+	  
+	  
+	  <!-- About -->
+	 
+	<footer>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<p>Copyright &copy;2014 Mamba company. All rights reserved. By <a href="http://bootstraptaste.com">Bootstraptaste</a></p>
+				</div>
+			</div>		
+		</div>	
+	</footer>
+	 
+	 <!-- js -->
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.smooth-scroll.min.js"></script>
+	<script src="js/jquery.dlmenu.js"></script>
+	<script src="js/wow.min.js"></script>
+	<script src="js/custom.js"></script>
+  	
+</html>

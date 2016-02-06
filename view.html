@@ -1,0 +1,326 @@
+<html>
+<head>
+
+<title>Bikepool</title>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <!-- css -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <link href="css/style.css" rel="stylesheet" media="screen">
+	<link href="color/default.css" rel="stylesheet" media="screen">
+	<script src="js/modernizr.custom.js"></script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="prof.css">
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<style>
+body{text-align:left;}
+</style>
+</head>
+<script>
+function getData()
+{
+	request=$.ajax({
+				url:"http://localhost:3000/getData",
+				type:"post",
+				data:{session:localStorage.getItem("sessionfriend")}
+				});
+				request.done(function(response,textstatus,jqXHR)
+				{
+					console.log(response);
+					populate(response);
+					compareFriend();
+				})
+				request.fail(function (jqXHR, textStatus, errorThrown)
+				{
+					console.error("The following error occurred: "+textStatus, errorThrown);
+				});
+
+}
+
+function populate(val)
+{
+	var data=JSON.parse(val);
+	var session=localStorage.getItem("sessionfriend");
+	
+	console.log(session);
+	document.getElementById("labelname").innerHTML=data.FName + ", " + data.LName;
+	document.getElementById("email").value=data.Email;
+	document.getElementById("phone").value=data.Tel;
+	document.getElementById("bikeExp").value=data.BikeExp;
+//	console.log(data.Photo);
+	
+	if(data.Photo == null){
+		console.log("No photo");
+	}
+	else { 
+		document.getElementById("photoShow").src="file:///C:/Users/Xiao/WebstormProjects/backend/"+session+data.Photo;
+	}
+	//console.log(document.getElementById("photoShow").src);	
+}
+
+function compareFriend() 
+	{	
+		var friendship;
+	
+		request=$.ajax({
+				url:"http://localhost:3000/compare",
+				type:"post",
+				async:false, //Think more on this
+				data:{friendEmail: localStorage.getItem("sessionfriend"), session:localStorage.getItem("session")}
+				});
+				
+		request.done(function(response,textstatus,jqXHR)
+		{
+		//	console.log("response " +response);
+			
+			if(response === "Not Found") {
+				document.getElementById('reject').style.visibility = 'hidden';
+				document.getElementById('accept').style.visibility = 'hidden';
+				document.getElementById('desp').innerHTML = 'You two are not friends';
+				//document.getElementById('submit').style.visibility = 'hidden';
+			}
+			else 
+			{
+				var data = JSON.parse(response);
+				document.getElementById('submit').style.visibility = 'hidden';
+				
+				if(data.Request === 0)
+				{
+					document.getElementById('reject').value = 'cancel request'; 
+					document.getElementById('desp').innerHTML = 'You sent a friend request to him/her';
+					document.getElementById('accept').style.visibility = 'hidden';
+				}
+				else if(data.Request === 1)
+				{
+					document.getElementById('reject').value = 'ignore'; 
+					document.getElementById('desp').innerHTML = 'He/She sent a friend request to you';
+				}
+				else if(data.Request === 2)
+				{
+					document.getElementById('reject').value = 'unfriend'; 
+					document.getElementById('desp').innerHTML = 'You are friends';
+					document.getElementById('accept').style.visibility = 'hidden';
+				}
+			}
+			})
+				
+		request.fail(function (jqXHR, textStatus, errorThrown)
+		{
+			console.error("The following error occurred: "+textStatus, errorThrown);
+			
+		});		
+		
+	}
+</script>
+
+<script>
+$(document).ready(function()
+	{	
+		$("#submit").click(function()
+		{
+			request1 = $.ajax({
+						url: "http://localhost:3000/sendRequest",
+						type: "post",
+						data: {session:localStorage.getItem("session"), friendEmail:localStorage.getItem("sessionfriend")}
+			});
+			
+			request1.done(function (response, textStatus, jqXHR)
+			{
+				console.log(response);
+
+				if(response==="Request sent")
+				{
+					alert("Request sent.");
+					document.getElementById('submit').value = 'Sent';
+					document.getElementById('submit').disabled = 'true';
+					document.getElementById('desp').innerHTML = 'You just sent a friend request.';
+					
+				}
+			});
+
+			request1.fail(function (jqXHR, textStatus, errorThrown)
+			{
+				console.error("The following error occurred: "+textStatus, errorThrown);
+			});
+		});	
+});
+
+$(document).ready(function()
+	{	
+		$("#reject").click(function()
+		{
+			request=$.ajax({
+				url:"http://localhost:3000/remove",
+				type:"post",
+				data:{friendEmail:localStorage.getItem("sessionfriend"), session:localStorage.getItem("session")}
+			});
+		request.done(function(response,textstatus,jqXHR)
+		{
+			console.log(response);
+			document.getElementById('reject').value = 'done';
+			document.getElementById('reject').disabled = 'true';
+			document.getElementById('accept').style.visibility = 'hidden';
+			document.getElementById('desp').innerHTML = 'Done.';
+		
+		})
+		request.fail(function (jqXHR, textStatus, errorThrown)
+		{
+			console.error("The following error occurred: "+textStatus, errorThrown);
+		});
+	});
+});
+
+$(document).ready(function()
+{
+$("#accept").click(function()
+{
+	request=$.ajax({
+				url:"http://localhost:3000/approveRequest",
+				type:"post",
+				data:{friendEmail:localStorage.getItem("sessionfriend"), session:localStorage.getItem("session")}
+			});
+	request.done(function(response,textstatus,jqXHR)
+	{
+			console.log(response);
+			document.getElementById('accept').value = 'Accepted';
+			document.getElementById('reject').style.visibility = 'hidden';
+			document.getElementById('accept').disabled = 'true';
+			document.getElementById('desp').innerHTML = 'You two are friends now.';
+	})
+	request.fail(function (jqXHR, textStatus, errorThrown)
+	{
+			console.error("The following error occurred: "+textStatus, errorThrown);
+	});
+});
+});
+
+</script>
+
+<body onload="getData()" >
+<!-- <div class="menu-area">
+			<div id="dl-menu" class="dl-menuwrapper">
+						<button class="dl-trigger">Open Menu</button>
+						<ul class="dl-menu">
+							<li>
+								<a href="home.html">Home</a>
+							</li>
+							<li><a href="about.html">About</a></li>
+ 							<li><a href="contact.html">Contact</a></li>
+							<li><a href="prof.html">Profile</a></li>
+							<li>
+								<a href="#">Friends</a>
+								<ul class="dl-submenu">
+									<li><a href="friend.html">Find Friends</a></li>
+									<li><a href="managefriend.html">Manage Friends</a></li>
+								</ul>
+							</li>
+						</ul>
+					</div> 
+	</div> --> 	
+<div class="container" style="padding-top: 60px;">
+  <h1 class="page-header" id="labelname"> Friend's Name</h1>
+  <h5 id="desp" ></h5>
+  <div class="row">
+ 
+ 
+	<!-- left column -->		
+    <div id="test" class="col-md-4 col-sm-6 col-xs-12">
+		<div class="text-center">
+			
+			<img id="photoShow" class="profile-pic" src="default_user.jpg", width="200" height="200" />
+		</div>
+		<br>
+	</div>
+	
+
+    <!-- edit form column -->
+    <div class="col-md-8 col-sm-6 col-xs-12 personal-info">
+		<form class="form-horizontal" role="form">
+              
+        <div class="form-group">
+			<label class="col-lg-3 control-label">Email:</label>
+			<div class="col-lg-8">
+            <input class="form-control" id="email" value="" type="text" disabled>
+			</div>
+        </div>
+		<div class="form-group">
+			<label class="col-lg-3 control-label">Phone:</label>
+			<div class="col-lg-8">
+            <input class="form-control" id="phone" value="" type="tel" disabled>
+			</div>
+        </div>
+        
+		<div class="form-group">
+			<label class="col-md-3 control-label">Bike Experience:</label>
+			<div class="col-lg-8">
+			<select class="form-control" id="bikeExp" value="Experience Level" disabled>
+					<option value="one">Beginner</option>
+					<option value="two">Intermediate</option>
+					<option value="three">Expert</option>
+				</select>
+				</div>
+		</div>
+        
+     
+        <div class="form-group">
+			<label class="col-md-3 control-label"></label>
+			<div class="col-md-8" align="right">
+             <input type="button" id="submit" class="btn btn-primary" value="ADD" type="button">
+            <span></span>
+			<input type="button" id="accept" class="btn btn-primary" value="Accept" type="button">
+            <span></span>
+			<input type="button" id="reject" class="btn btn-primary" value="Cancel" type="button">
+            <span></span>
+			<input class="btn btn-default" value="Find Friend" onclick="trial()">
+			<span></span>
+            <input class="btn btn-default" value="Manage Friend" onclick="manage()">
+			</div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+	function trial(){
+		window.location.href="friend.html";	
+		localStorage.removeItem("sessionfriend");
+	}
+	
+	function manage() {
+		window.location.href="managefriend.html";	
+		localStorage.removeItem("sessionfriend");
+	}
+	
+</script>
+
+<footer>
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<p style="text-align:center;">Copyright &copy;2015 Bikepool .All rights reserved </p>
+				</div>
+			</div>		
+		</div>	
+</footer>
+<!-- js -->
+    <script src="js/jquery.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+	<script src="js/jquery.smooth-scroll.min.js"></script>
+	<script src="js/jquery.dlmenu.js"></script>
+	<script src="js/wow.min.js"></script>
+	<script src="js/custom.js"></script>	
+</body>
+</html>

@@ -1,0 +1,240 @@
+<html>
+<head>
+<meta charset="utf-8" />
+<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<!-- css -->
+<link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+<link href="css/style.css" rel="stylesheet" media="screen">
+<link href="color/default.css" rel="stylesheet" media="screen">
+<script src="js/modernizr.custom.js"></script>
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script src="jquery-2.1.4.min.js"></script>
+
+<style type="text/css">
+*{}
+body{background-color: #1A1A1A;color:white; }
+#submit{color:black;}
+
+td{padding:2.5px;}
+</style>
+
+<!--<link rel="stylesheet" type="text/css" href="myButton.css">-->
+
+<script src="jquery-2.1.4.min.js"></script>
+<script>
+	var res;
+	var table = document.createElement('table');
+	
+	$(document).ready(getData());	
+
+	function getData()
+	{
+		request = $.ajax({
+			url: "http://localhost:3000/findFriend",
+			type: "post",
+			data: {session:localStorage.getItem("session")}
+		});
+		request.done(function (response, textStatus, jqXHR)	
+		{
+			res=response;
+			populate(response,"-1",0);	
+		});
+
+		request.fail(function (jqXHR, textStatus, errorThrown)
+		{
+			console.error("The following error occurred: "+textStatus, errorThrown);
+		});
+	}
+	
+	function populate(res,querry,flag)
+	{
+		if(flag===1)
+		{
+			document.getElementById("divtab").innerHTML="";
+			table.innerHTML="";
+		}
+		var data=JSON.parse(res);
+		for(var i=0;i<data.length;i++)
+		{
+			if(data[i].FName.indexOf(querry)<0 && flag===1)
+				continue;
+			console.log(data[i].FName);
+			tr=document.createElement('tr');
+			for(var j=0;j<4;j++)
+			{
+				var td=document.createElement('td');
+				if(j===0)
+				{
+					var img = document.createElement('img');
+					if(data[i].Photo== null)
+						img.src="file:///C:/Users/Xiao/WebstormProjects/backend/default_user.jpg";
+					else 
+						img.src="file:///C:/Users/Xiao/WebstormProjects/backend/"+data[i].Email+data[i].Photo;
+					td.appendChild(img);
+				}
+				if(j===1)
+				{
+					td.innerHTML=data[i].FName+","+data[i].Email;
+				}
+				
+				if(j===2)
+				{
+					var but = document.createElement('button');
+					but.innerHTML="VIEW";
+					but.onclick=viewFriend;
+					but.id=data[i].FName+","+data[i].Email;
+					but.className = "btn btn-primary";
+					td.appendChild(but);
+				}
+				if(j===3)
+				{
+					var bt = document.createElement('button');
+					var isFriend = compareFriend(data[i].Email);
+					
+					console.log(isFriend);
+				//	console.log(data[i].Email);
+					
+					if(isFriend === true) 
+					{
+						//bt.innerHTML="Disabled";
+						bt.style.display = "none";
+					}
+					else 
+					{
+						bt.innerHTML="ADD";
+						//bt.style.color = "black";
+						bt.onclick=sendRequest;
+						bt.id=data[i].FName+","+data[i].Email;
+						bt.className = "btn btn-primary";
+						
+					}
+					
+					td.appendChild(bt);
+				}
+				tr.appendChild(td);
+			}
+			table.appendChild(tr);
+		}
+		if(flag===1)
+			document.getElementById("divtab").appendChild(table);
+		
+	}
+
+	function sendRequest() 
+	{
+		var splitVal;
+		var friendEmail;
+		splitVal = this.id.split(',');
+		console.log(splitVal[1]);
+		
+		request=$.ajax({
+					url:"http://localhost:3000/sendRequest",
+					type:"post",
+					data:{friendEmail:splitVal[1], session:localStorage.getItem("session")}
+					});
+					request.done(function(response,textstatus,jqXHR)
+					{
+						console.log(response);
+					})
+					request.fail(function (jqXHR, textStatus, errorThrown)
+					{
+						console.error("The following error occurred: "+textStatus, errorThrown);
+					});
+	}
+	
+	function viewFriend() 
+	{
+		var splitVal;
+		var frienduser;
+		splitVal = this.id.split(',');
+		frienduser = splitVal[1];
+		window.location.href="view.html";
+		localStorage.setItem("sessionfriend", frienduser);
+	}
+	
+	function populateTable()
+	{
+		document.getElementById("divtab").appendChild(table);
+	}
+	
+	function compareFriend(val) 
+	{	
+		var friendship;
+	
+	//	console.log("value passed in: " + val);
+		request=$.ajax({
+				url:"http://localhost:3000/compare",
+				type:"post",
+				async:false, //Think more on this
+				data:{friendEmail: val, session:localStorage.getItem("session")}
+				});
+				
+		request.done(function(response,textstatus,jqXHR)
+		{
+		//	console.log("response " +response);
+			if(response === "Found") friendship = true;
+			else friendship = false;
+			
+		//	console.log("friendship: " + friendship);
+		})
+				
+		request.fail(function (jqXHR, textStatus, errorThrown)
+		{
+			console.error("The following error occurred: "+textStatus, errorThrown);
+			friendship = false;
+			
+		});		
+		
+		
+		return friendship;
+	}
+</script>
+
+
+</head>
+<div class="menu-area">
+	<div id="dl-menu" class="dl-menuwrapper">
+		<button class="dl-trigger">Open Menu</button>
+		<ul class="dl-menu">
+		<li>
+		<a href="home.html">Home</a>
+		</li>
+		<li><a href="about.html">About</a></li>
+		
+		<li><a href="contact.html">Contact</a></li>
+		<li><a href="prof.html">Profile</a></li>
+		<li>
+		<a href="#">Friends</a>
+		<ul class="dl-submenu">
+			<li><a href="friend.html">Find Friends</a></li>
+			<li><a href="managefriend.html">Manage Friends</a></li>
+		</ul>
+		</li>
+		</ul>
+	</div>
+<!-- /dl-menuwrapper -->
+</div>	
+
+<body onload="populateTable()">
+<input type="text" id="name" style="color:black;" placeholder="Search for friends" /> 
+
+<!--<button id="submit">Find Bikers</button>-->
+ <button id="submit" onclick="populate(res,document.getElementById('name').value,1)">Find Friends</button> 
+<div id="divtab">
+
+Send a friend request!
+</div>
+<script src="js/jquery.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/jquery.smooth-scroll.min.js"></script>
+<script src="js/jquery.dlmenu.js"></script>
+<script src="js/wow.min.js"></script>
+<script src="js/custom.js"></script>
+</body>
+
+</html>

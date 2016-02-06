@@ -1,0 +1,104 @@
+<html>
+<head>
+<script src="jquery-2.1.4.min.js"></script>
+<script>
+	var res;
+	$(document).ready(getData());	
+
+	function getData()
+	{
+		request = $.ajax({
+			url: "http://localhost:3000/findFriend",
+			type: "post",
+			data: {session:localStorage.getItem("session")}
+		});
+		request.done(function (response, textStatus, jqXHR)	
+		{
+			res=response;
+			populate(response,"-1");	
+		});
+
+		request.fail(function (jqXHR, textStatus, errorThrown)
+		{
+			console.error("The following error occurred: "+textStatus, errorThrown);
+		});
+	}
+	
+	function populate(res,querry)
+	{
+		var data=JSON.parse(res);
+		var table = document.createElement('table');
+		for(var i=0;i<data.lenngth;i++)
+		{
+			if(data[i].FName.indexOf(querry)<0)
+				continue;
+			tr=document.createElement('tr');
+			for(var j=0;j<3;j++)
+			{
+				var td=document.createElement('td');
+				if(j===0)
+				{
+					var img = document.createElement('img');
+					if(data[i].Photo=== null)
+						img.src="file:///C:/Users/Xiao/WebstormProjects/backend/default_user.jpg";
+					else 
+						img.src="file:///C:/Users/Xiao/WebstormProjects/backend/"+data[i].Email+data[i].Photo;
+					td.appendChild(img);
+				}
+				if(j===1)
+				{
+					td.innerHTML=data[i].FName+","+data[i].Email;
+				}
+				else
+				{
+					var bt = document.createElement('button');
+					bt.innerHTML="add friend ";
+					bt.addEventListener('click',sendRequest(data[i].FName+","+data[i].Email),false);
+					bt.className = "FriendButton";
+					td.appendChild(bt);
+				}
+				tr.appendChild(td);
+			}
+			table.appendChild(tr);
+		}
+			document.getElementById("div1").appendChild(table);
+	}
+
+
+function sendRequest(val) {
+	var splitVal;
+	var friendEmail;
+	splitVal = val.split(',');
+	console.log(splitVal[1]);
+	
+	request=$.ajax({
+				url:"http://localhost:3000/sendRequest",
+				type:"post",
+				data:{friendEmail:splitVal[1], session:localStorage.getItem("session")}
+				});
+				request.done(function(response,textstatus,jqXHR)
+				{
+					console.log(response);
+				})
+				request.fail(function (jqXHR, textStatus, errorThrown)
+				{
+					console.error("The following error occurred: "+textStatus, errorThrown);
+				});
+}
+
+</script>
+
+
+</head>
+<body>
+<input type="text" id="name">
+<!--<button id="submit">Find Bikers</button>-->
+ <button id="submit" onclick="populate('res','name.value')">Find Friends</button> 
+<div id="div1">
+
+Send a friend request!
+</div>
+
+</body>
+
+</html>

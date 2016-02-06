@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login Page</title>
+<script src="jquery-2.1.4.min.js"></script>
+<script>
+	$(document).ready(function()
+	{
+		var user,pass;
+		
+		
+		$("#submit").click(function()
+		{
+			user=$("#user").val();
+			pass=$("#password").val();
+			request = $.ajax({
+						url: "http://localhost:3000/register",
+						type: "post",
+						data: {user:user, password:pass}
+						});
+			request.done(function (response, textStatus, jqXHR)
+			{
+				console.log(response);
+
+				if(response==="Authorized")
+				{
+					//alert(response);
+					showHomePage();
+				}
+                else
+                         alert("Incorrect Username or password");
+			});
+
+			request.fail(function (jqXHR, textStatus, errorThrown)
+			{
+				console.error("The following error occurred: "+textStatus, errorThrown);
+			});
+		});	
+});
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=0.5">
+<link rel="stylesheet" href="page.css">
+
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+</head>
+
+<script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1496994193932226',
+      xfbml      : true,
+      version    : 'v2.4'
+    });
+  };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
+<body class=" main-body" onload="getName()">
+<div class="page-header body-header">
+	<section style="float:left"><img id="logo-main" style="margin-left : 10px" src="bikepool-logo-cropped.png" width="100" height="80"></img>
+	</section>
+    <section style="float:center"><h1>BikePool <h4><small>A Silicon Valley Bike Coalition Intiative</small></h4></h1></section>
+</div>
+
+<div class="modal-dialog">
+	<div class="modal-content bckgrnd" style="height: 335px;">
+		<div class="modal-header">
+			<h1 class="text-center">Login</h1>
+		</div> 
+
+		<div class="modal-body">
+			<form class="col-xs-12 center-block">
+				<div class="form-group has-feedback has-feedback-left"><i class="form-control-feedback glyphicon glyphicon-user"></i><input id="user" type="text" class="form-control input-xs "></div>
+
+				<div class="form-group has-feedback has-feedback-left"> 
+					<input type="password" id="password" class="form-control input-xs" placeholder="Password"><i class="form-control-feedback glyphicon glyphicon-lock"></i>
+				</div>
+				<div class="form-group">
+					<input type="button" id="submit" class="btn btn-block btn-md btn-primary" value="SIGN IN">
+				</div>
+				<div class="form-group">
+					<input type="button"  onclick="trial()" class="btn btn-block btn-md btn-success" value="SIGN UP">
+					<span class="pull-right"> <a href="#">Forgot Password?</a></span>
+				</div>
+				<div class="modal-footer">
+				
+				</div>
+			</form>		
+		
+		</div>
+	</div>
+</div>
+
+<script type="text/javascript">
+	function trial(){
+		window.location.href="signup.html";	
+	}
+	
+	function showHomePage() {
+	user=$("#user").val();
+	window.location.href="home.html";
+	localStorage.setItem("session", user); // Save the user name as the session variable;
+	localStorage.removeItem("sessionnew");
+	}
+	
+	function getName() {
+	
+		var loginuser = localStorage.getItem("session");
+		var newuser = localStorage.getItem("sessionnew");
+		
+		if(loginuser == null && newuser == null) 
+		{
+			document.getElementById("user").placeholder = "Username";
+		}
+		else if(loginuser != null) 
+		{	
+			document.getElementById("user").value = loginuser;
+		}
+		else if(newuser != null)
+		{
+			document.getElementById("user").value = newuser;
+		}
+	}
+</script>
+</body>
+</html> 

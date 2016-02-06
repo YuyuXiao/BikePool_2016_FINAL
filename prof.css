@@ -1,0 +1,21 @@
+body{background-color: #1A1A1A;
+color:white;
+}
+.upload-button {
+    padding: 4px;
+    border: 1px solid black;
+    border-radius: 5px;
+    display: block;
+    float: left;
+}
+
+.profile-pic {
+    max-width: 300px;
+    max-height: 300px;
+    display: block;
+}
+
+/*
+.file-upload {
+    display: none;
+} */
